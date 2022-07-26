@@ -1,22 +1,5 @@
 # fusion2urdf
 
-* 2020/11/10: README fix
-  * MacOS Installation command fixed in README
-  * Date format unified in README to yyyy/dd/mm
-  * Shifted Installation Upwards for better User Experience and easier to find
-* 2020/01/04: Multiple updates:
-  * no longer a need to run a bash script to convert stls
-  * some cleanup around joint and transmission generation
-  * defines a sample material tag instead of defining a material in each link
-  * fusion2urdf now generates a self-contained ROS {robot_name}_description package
-  * now launched by roslaunch {robot_name}_description display.launch
-  * changed fusion2urdf output from urdf to xacro for more flexibility
-  * separate out material, transmissions, gazebo elements to separate files
-* 2018/20/10: Fixed functions to generate launch files
-* 2018/25/09: Supports joint types "Rigid", "Slider" & Supports the joints' limit(for "Revolute" and "Slider"). 
-* 2018/19/09: Fixed the bugs about the center of the mass and the inertia.
-
-
 ## Installation
 
 Run the following command in your shell.
