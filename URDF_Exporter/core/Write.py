@@ -226,15 +226,25 @@ def write_gazebo_xacro(joints_dict, links_xyz_dict, inertial_dict, package_name,
         f.write('<xacro:property name="body_color" value="Gazebo/Silver" />\n')
         f.write('\n')
 
+        """
         gazebo = Element('gazebo')
         plugin = SubElement(gazebo, 'plugin')
-        plugin.attrib = {'name':'control', 'filename':'libgazebo_ros_control.so'}
+        plugin.attrib = {'name':'gazebo_ros_control', 'filename':'libgazebo_ros_control.so'}
         gazebo_xml = "\n".join(utils.prettify(gazebo).split("\n")[1:])
         f.write(gazebo_xml)
+        """
+
+        f.write('<gazebo>\n')
+        f.write('  <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">\n')
+        f.write('  <robotNamespace>/{}</robotNamespace>\n'.format(robot_name))
+        f.write('  <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>')
+        f.write('  </plugin>\n')
+        f.write('</gazebo>\n')
+        f.write('\n')
 
         # for base_link
         f.write('<gazebo reference="base_link">\n')
-        f.write('  <material>${body_color}</material>\n')
+        f.write('  <material>Gazebo/Silver</material>\n')
         f.write('  <mu1>0.2</mu1>\n')
         f.write('  <mu2>0.2</mu2>\n')
         f.write('  <selfCollide>true</selfCollide>\n')
@@ -300,7 +310,7 @@ def write_display_launch(package_name, robot_name, save_dir):
     node1.attrib = {'name':'joint_state_publisher_gui', 'pkg':'joint_state_publisher_gui', 'type':'joint_state_publisher_gui'}
 
     node2 = SubElement(launch, 'node')
-    node2.attrib = {'name':'robot_state_publisher', 'pkg':'robot_state_publisher', 'type':'robot_state_publisher'}
+    node2.attrib = {'name':'rviz_robot_state_publisher', 'pkg':'robot_state_publisher', 'type':'robot_state_publisher'}
 
     node3 = SubElement(launch, 'node')
     node3.attrib = {'name':'rviz', 'pkg':'rviz', 'args':'-d $(arg rvizconfig)', 'type':'rviz', 'required':'true'}
@@ -435,7 +445,7 @@ def write_yaml(package_name, robot_name, save_dir, joints_dict):
     try: os.mkdir(save_dir + '/launch')
     except: pass 
 
-    controller_name = robot_name + '_controller'
+    controller_name = robot_name# + '_controller'
     file_name = save_dir + '/launch/controller.yaml'
     with open(file_name, 'w') as f:
         f.write(controller_name + ':\n')
@@ -450,7 +460,8 @@ def write_yaml(package_name, robot_name, save_dir, joints_dict):
             joint_type = joints_dict[joint]['type']
             if joint_type != 'fixed':
                 f.write('  ' + joint + '_position_controller:\n')
-                f.write('    type: effort_controllers/JointPositionController\n')
+                f.write('    type: position_controllers/JointPositionController\n')
                 f.write('    joint: '+ joint + '\n')
                 f.write('    pid: {p: 100.0, i: 0.01, d: 10.0}\n')
+                f.write('  # velocity_controllers\n')
 
