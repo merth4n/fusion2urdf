@@ -10,11 +10,7 @@ from xml.etree.ElementTree import Element, SubElement
 from . import Link, Joint
 from ..utils import utils
 
-plugins = {"diff": True, "camera": True, "lidar": False, "360_lidar": True, "imu": False}
-with open(os.path.dirname(__file__) +'/../gazebo_plugins/config.yaml', mode='r', encoding='utf-8') as set:
-    for (i, line) in enumerate(set):
-        datas = line.strip().split(':')
-        plugins[datas[0]] = datas[1]
+plugins = ["camera_1", "lidar_1", "imu_1"]
 
 def write_link_urdf(joints_dict, repo, links_xyz_dict, file_name, inertial_dict):
     """
@@ -101,7 +97,7 @@ whether the connections\nparent=component2=%s\nchild=component1=%s\nare correct 
 to swap component1<=>component2"
                 % (parent, child, parent, child), "Error!")
                 quit()
-                
+            
             joint = Joint.Joint(name=j, joint_type = joint_type, xyz=xyz, \
             axis=joints_dict[j]['axis'], parent=parent, child=child, \
             upper_limit=upper_limit, lower_limit=lower_limit)
@@ -201,15 +197,17 @@ whether the connections\nparent=component2=%s\nchild=component1=%s\nare correct 
 to swap component1<=>component2"
                 % (parent, child, parent, child), "Error!")
                 quit()
-                
+            
+            
             joint = Joint.Joint(name=j, joint_type = joint_type, xyz=xyz, \
             axis=joints_dict[j]['axis'], parent=parent, child=child, \
             upper_limit=upper_limit, lower_limit=lower_limit)
             if joint_type != 'fixed':
-                joint.make_transmission_xml()
-                f.write(joint.tran_xml)
-                f.write('\n')
-
+                if not("no_act" in j):
+                    joint.make_transmission_xml()
+                    f.write(joint.tran_xml)
+                    f.write('\n')
+        f.write("<!--\nVelocityJointInterface\n<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>\n-->\n\n")
         f.write('</robot>\n')
 
 def write_gazebo_xacro(joints_dict, links_xyz_dict, inertial_dict, package_name, robot_name, save_dir):
@@ -226,18 +224,10 @@ def write_gazebo_xacro(joints_dict, links_xyz_dict, inertial_dict, package_name,
         f.write('<xacro:property name="body_color" value="Gazebo/Silver" />\n')
         f.write('\n')
 
-        """
-        gazebo = Element('gazebo')
-        plugin = SubElement(gazebo, 'plugin')
-        plugin.attrib = {'name':'gazebo_ros_control', 'filename':'libgazebo_ros_control.so'}
-        gazebo_xml = "\n".join(utils.prettify(gazebo).split("\n")[1:])
-        f.write(gazebo_xml)
-        """
-
         f.write('<gazebo>\n')
         f.write('  <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">\n')
         f.write('  <robotNamespace>/{}</robotNamespace>\n'.format(robot_name))
-        f.write('  <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>')
+        f.write('  <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>\n')
         f.write('  </plugin>\n')
         f.write('</gazebo>\n')
         f.write('\n')
@@ -264,13 +254,13 @@ def write_gazebo_xacro(joints_dict, links_xyz_dict, inertial_dict, package_name,
             f.write('\n')
 
         for i in plugins:
-            if(plugins[i] == "True"):
-                with open(os.path.dirname(__file__) +f'/../gazebo_plugins/{i}.gazebo', mode='r', encoding='utf-8') as plg:
-                    for line in plg:
-                        f.write(line)
+            for joint in joints_dict:
+                if(i in joints_dict[joint]['child']):
+                    with open(os.path.dirname(__file__) +f'/../gazebo_plugins/{i}.gazebo', mode='r', encoding='utf-8') as plg:
+                        for line in plg:
+                            f.write(line)
 
-                f.write('\n')
-            
+            f.write('\n')
 
         f.write('</robot>\n')
 
@@ -307,7 +297,7 @@ def write_display_launch(package_name, robot_name, save_dir):
     param2.attrib = {'name':'use_gui', 'value':'$(arg gui)'}
 
     node1 = SubElement(launch, 'node')
-    node1.attrib = {'name':'joint_state_publisher_gui', 'pkg':'joint_state_publisher_gui', 'type':'joint_state_publisher_gui'}
+    node1.attrib = {'name':'joint_state_publisher', 'pkg':'joint_state_publisher', 'type':'joint_state_publisher'}
 
     node2 = SubElement(launch, 'node')
     node2.attrib = {'name':'rviz_robot_state_publisher', 'pkg':'robot_state_publisher', 'type':'robot_state_publisher'}
@@ -350,7 +340,7 @@ def write_gazebo_launch(package_name, robot_name, save_dir):
     
     number_of_args = 5
     args = [None for i in range(number_of_args)]
-    args_name_value_pairs = [['paused', 'true'], ['use_sim_time', 'true'],
+    args_name_value_pairs = [['paused', 'false'], ['use_sim_time', 'true'],
                              ['gui', 'true'], ['headless', 'false'], 
                              ['debug', 'false']]
                              
@@ -397,7 +387,8 @@ def write_control_launch(package_name, robot_name, save_dir, joints_dict):
     for j in joints_dict:
         joint_type = joints_dict[j]['type']
         if joint_type != 'fixed':
-            controller_args_str += j + '_position_controller '
+            if not("no_act" in j):
+                controller_args_str += j + '_controller '
     controller_args_str += 'joint_state_controller '
 
     node_controller = Element('node')
@@ -455,13 +446,14 @@ def write_yaml(package_name, robot_name, save_dir, joints_dict):
         f.write('    type: joint_state_controller/JointStateController\n')  
         f.write('    publish_rate: 50\n\n')
         # position_controllers
-        f.write('  # Position Controllers --------------------------------------\n')
+        f.write('  # Controllers --------------------------------------\n')
         for joint in joints_dict:
             joint_type = joints_dict[joint]['type']
             if joint_type != 'fixed':
-                f.write('  ' + joint + '_position_controller:\n')
-                f.write('    type: position_controllers/JointPositionController\n')
-                f.write('    joint: '+ joint + '\n')
-                f.write('    pid: {p: 100.0, i: 0.01, d: 10.0}\n')
-                f.write('  # velocity_controllers\n')
+                if not("no_act" in joint):
+                    f.write('  ' + joint + '_controller:\n')
+                    f.write('    type: position_controllers/JointPositionController\n')
+                    f.write('#    type: velocity_controllers/JointVelocityController\n')
+                    f.write('    joint: '+ joint + '\n')
+                    f.write('#    pid: {p: 100.0, i: 0.01, d: 10.0}\n')
 

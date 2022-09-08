@@ -76,26 +76,26 @@ class Joint:
         type: transmission interface/SimpleTransmission
         hardwareInterface: PositionJointInterface        
         """        
-        
-        tran = Element('transmission')
-        tran.attrib = {'name':self.name + '_tran'}
-        
-        joint_type = SubElement(tran, 'type')
-        joint_type.text = 'transmission_interface/SimpleTransmission'
-        
-        joint = SubElement(tran, 'joint')
-        joint.attrib = {'name':self.name}
-        hardwareInterface_joint = SubElement(joint, 'hardwareInterface')
-        hardwareInterface_joint.text = 'hardware_interface/PositionJointInterface'
-        
-        actuator = SubElement(tran, 'actuator')
-        actuator.attrib = {'name':self.name + '_actr'}
-        hardwareInterface_actr = SubElement(actuator, 'hardwareInterface')
-        hardwareInterface_actr.text = 'hardware_interface/PositionJointInterface'
-        mechanicalReduction = SubElement(actuator, 'mechanicalReduction')
-        mechanicalReduction.text = '1'
-        
-        self.tran_xml = "\n".join(utils.prettify(tran).split("\n")[1:])
+        if not("no_act" in self.name):
+            tran = Element('transmission')
+            tran.attrib = {'name':self.name + '_tran'}
+            
+            joint_type = SubElement(tran, 'type')
+            joint_type.text = 'transmission_interface/SimpleTransmission'
+            
+            joint = SubElement(tran, 'joint')
+            joint.attrib = {'name':self.name}
+            hardwareInterface_joint = SubElement(joint, 'hardwareInterface')
+            hardwareInterface_joint.text = 'hardware_interface/PositionJointInterface'
+            
+            actuator = SubElement(tran, 'actuator')
+            actuator.attrib = {'name':self.name + '_actr'}
+            hardwareInterface_actr = SubElement(actuator, 'hardwareInterface')
+            hardwareInterface_actr.text = 'hardware_interface/PositionJointInterface'
+            mechanicalReduction = SubElement(actuator, 'mechanicalReduction')
+            mechanicalReduction.text = '1'
+            
+            self.tran_xml = "\n".join(utils.prettify(tran).split("\n")[1:])
 
 
 def make_joints_dict(root, msg):
