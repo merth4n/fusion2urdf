@@ -1,5 +1,8 @@
 # fusion2urdf
 
+## Hint
+if you add imu link, imu plugins automatically added. 360 lidar and camera plugin works too.
+
 ## Installation
 
 Run the following command in your shell.
