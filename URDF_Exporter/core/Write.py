@@ -450,10 +450,12 @@ def write_yaml(package_name, robot_name, save_dir, joints_dict):
         for joint in joints_dict:
             joint_type = joints_dict[joint]['type']
             if joint_type != 'fixed':
-                if not("no_act" in joint):
+                if "motor" in joint:
                     f.write('  ' + joint + '_controller:\n')
-                    f.write('    type: position_controllers/JointPositionController\n')
-                    f.write('#    type: velocity_controllers/JointVelocityController\n')
+                    if "pos_motor" in joint:
+                        f.write('    type: position_controllers/JointPositionController\n')
+                    elif "vel_motor" in joint:
+                        f.write('    type: velocity_controllers/JointVelocityController\n')
                     f.write('    joint: '+ joint + '\n')
                     f.write('#    pid: {p: 100.0, i: 0.01, d: 10.0}\n')
 
