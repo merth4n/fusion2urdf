@@ -76,7 +76,7 @@ class Joint:
         type: transmission interface/SimpleTransmission
         hardwareInterface: PositionJointInterface        
         """        
-        if not("no_act" in self.name):
+        if "motor" in self.name:
             tran = Element('transmission')
             tran.attrib = {'name':self.name + '_tran'}
             
@@ -86,12 +86,21 @@ class Joint:
             joint = SubElement(tran, 'joint')
             joint.attrib = {'name':self.name}
             hardwareInterface_joint = SubElement(joint, 'hardwareInterface')
-            hardwareInterface_joint.text = 'hardware_interface/PositionJointInterface'
             
+            if "pos_motor" in self.name:
+                hardwareInterface_joint.text = 'hardware_interface/PositionJointInterface'
+            elif "vel_motor" in self.name:
+                hardwareInterface_joint.text = 'hardware_interface/VelocityJointInterface'
+                
             actuator = SubElement(tran, 'actuator')
             actuator.attrib = {'name':self.name + '_actr'}
             hardwareInterface_actr = SubElement(actuator, 'hardwareInterface')
-            hardwareInterface_actr.text = 'hardware_interface/PositionJointInterface'
+            
+            if "pos_motor" in self.name:
+                hardwareInterface_actr.text = 'hardware_interface/PositionJointInterface'
+            elif "vel_motor" in self.name:
+                hardwareInterface_actr.text = 'hardware_interface/VelocityJointInterface'
+                
             mechanicalReduction = SubElement(actuator, 'mechanicalReduction')
             mechanicalReduction.text = '1'
             
