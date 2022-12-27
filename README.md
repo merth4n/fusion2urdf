@@ -1,10 +1,11 @@
 # fusion2urdf
 
-## Hint
-if you add imu link, imu plugins automatically added. 360 lidar and camera plugin works too.
+# Hint
+### If you add imu link, imu plugins automatically added. 360 lidar and camera plugin works too.
 
-If you name your position motor by pos_motor, controller added automatically.
-If you name your velocity motor by vel_motor, controller added automatically.
+### If you name your position motor by pos_motor, controller added automatically.
+
+### If you name your velocity motor by vel_motor, controller added automatically.
 
 
 ## Installation
