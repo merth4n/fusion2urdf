@@ -387,7 +387,7 @@ def write_control_launch(package_name, robot_name, save_dir, joints_dict):
     for j in joints_dict:
         joint_type = joints_dict[j]['type']
         if joint_type != 'fixed':
-            if not("no_act" in j):
+            if "motor" in j:
                 controller_args_str += j + '_controller '
     controller_args_str += 'joint_state_controller '
 
