@@ -203,7 +203,8 @@ to swap component1<=>component2"
             axis=joints_dict[j]['axis'], parent=parent, child=child, \
             upper_limit=upper_limit, lower_limit=lower_limit)
             if joint_type != 'fixed':
-                if not("no_act" in j):
+                if "motor" in j:
+                    print(joint)
                     joint.make_transmission_xml()
                     f.write(joint.tran_xml)
                     f.write('\n')

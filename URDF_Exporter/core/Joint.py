@@ -76,35 +76,34 @@ class Joint:
         type: transmission interface/SimpleTransmission
         hardwareInterface: PositionJointInterface        
         """        
-        if "motor" in self.name:
-            tran = Element('transmission')
-            tran.attrib = {'name':self.name + '_tran'}
+        tran = Element('transmission')
+        tran.attrib = {'name':self.name + '_tran'}
+        
+        joint_type = SubElement(tran, 'type')
+        joint_type.text = 'transmission_interface/SimpleTransmission'
+        
+        joint = SubElement(tran, 'joint')
+        joint.attrib = {'name':self.name}
+        hardwareInterface_joint = SubElement(joint, 'hardwareInterface')
+        
+        if "pos_motor" in self.name:
+            hardwareInterface_joint.text = 'hardware_interface/PositionJointInterface'
+        elif "vel_motor" in self.name:
+            hardwareInterface_joint.text = 'hardware_interface/VelocityJointInterface'
             
-            joint_type = SubElement(tran, 'type')
-            joint_type.text = 'transmission_interface/SimpleTransmission'
+        actuator = SubElement(tran, 'actuator')
+        actuator.attrib = {'name':self.name + '_actr'}
+        hardwareInterface_actr = SubElement(actuator, 'hardwareInterface')
+        
+        if "pos_motor" in self.name:
+            hardwareInterface_actr.text = 'hardware_interface/PositionJointInterface'
+        elif "vel_motor" in self.name:
+            hardwareInterface_actr.text = 'hardware_interface/VelocityJointInterface'
             
-            joint = SubElement(tran, 'joint')
-            joint.attrib = {'name':self.name}
-            hardwareInterface_joint = SubElement(joint, 'hardwareInterface')
-            
-            if "pos_motor" in self.name:
-                hardwareInterface_joint.text = 'hardware_interface/PositionJointInterface'
-            elif "vel_motor" in self.name:
-                hardwareInterface_joint.text = 'hardware_interface/VelocityJointInterface'
-                
-            actuator = SubElement(tran, 'actuator')
-            actuator.attrib = {'name':self.name + '_actr'}
-            hardwareInterface_actr = SubElement(actuator, 'hardwareInterface')
-            
-            if "pos_motor" in self.name:
-                hardwareInterface_actr.text = 'hardware_interface/PositionJointInterface'
-            elif "vel_motor" in self.name:
-                hardwareInterface_actr.text = 'hardware_interface/VelocityJointInterface'
-                
-            mechanicalReduction = SubElement(actuator, 'mechanicalReduction')
-            mechanicalReduction.text = '1'
-            
-            self.tran_xml = "\n".join(utils.prettify(tran).split("\n")[1:])
+        mechanicalReduction = SubElement(actuator, 'mechanicalReduction')
+        mechanicalReduction.text = '1'
+        
+        self.tran_xml = "\n".join(utils.prettify(tran).split("\n")[1:])
 
 
 def make_joints_dict(root, msg):
